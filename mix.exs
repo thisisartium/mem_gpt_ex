@@ -9,6 +9,7 @@ defmodule MemGPT.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
+      elixirc_paths: elixirc_paths(Mix.env()),
       docs: [
         main: "MemGPT",
         extras: ["README.md"]
@@ -23,6 +24,9 @@ defmodule MemGPT.MixProject do
       extra_applications: [:logger]
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
