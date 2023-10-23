@@ -4,6 +4,7 @@ defmodule MemGpt.AgentTest do
   use MemGpt.TestCase, async: true
 
   alias MemGpt.Agent
+  alias MemGpt.Agent.Functions.SendUserMessage
   alias MemGpt.Agent.Message
 
   import Mox
@@ -87,6 +88,17 @@ defmodule MemGpt.AgentTest do
 
       Agent.new(UUID.uuid4())
       |> Agent.handle_process_user_message(user_message.content)
+    end
+
+    test "it sends the send_user_message function description to the LLM" do
+      expect(MemGpt.Llm.Mock, :chat_completion, fn received_context, options ->
+        functions = Keyword.get(options, :functions, [])
+        assert SendUserMessage.schema() in functions
+        {:ok, received_context}
+      end)
+
+      Agent.new(UUID.uuid4())
+      |> Agent.handle_process_user_message(Faker.Lorem.sentence())
     end
   end
 end

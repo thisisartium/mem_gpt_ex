@@ -16,6 +16,7 @@ defmodule MemGpt.Agent do
   use TypedStruct
 
   alias MemGpt.Agent.Context
+  alias MemGpt.Agent.Functions.SendUserMessage
   alias MemGpt.Agent.Message
   alias MemGpt.Llm
 
@@ -169,7 +170,11 @@ defmodule MemGpt.Agent do
     state =
       update_in(state.context, &Context.append_message(&1, message))
 
-    {:ok, context} = Llm.chat_completion(state.context, [])
+    {:ok, context} =
+      Llm.chat_completion(state.context,
+        functions: [SendUserMessage.schema()]
+      )
+
     %{state | context: context}
   end
 
