@@ -20,6 +20,13 @@ defmodule MemGpt.AgentTest do
       assert Process.alive?(agent_pid)
       assert %Agent{id: ^agent_id} = :sys.get_state(agent_pid)
     end
+
+    test "the agent context is initialized with the agent's system message" do
+      {:ok, _agent_id, agent_pid} = Agent.boot()
+
+      assert Agent.Context.last_message(:sys.get_state(agent_pid).context) ==
+               Message.new(:system, Agent.system_message())
+    end
   end
 
   describe "find_agent_by_id/1" do
@@ -78,7 +85,7 @@ defmodule MemGpt.AgentTest do
       user_message = Message.new(:user, Faker.Lorem.sentence())
 
       context =
-        Agent.Context.new()
+        Agent.Context.new(Agent.system_message())
         |> Agent.Context.append_message(user_message)
 
       expect(MemGpt.Llm.Mock, :chat_completion, fn received_context, _options ->
@@ -92,6 +99,7 @@ defmodule MemGpt.AgentTest do
 
     test "it sends the send_user_message function description to the LLM" do
       expect(MemGpt.Llm.Mock, :chat_completion, fn received_context, options ->
+        assert Keyword.get(options, :function_call) == "auto"
         functions = Keyword.get(options, :functions, [])
         assert SendUserMessage.schema() in functions
         {:ok, received_context}

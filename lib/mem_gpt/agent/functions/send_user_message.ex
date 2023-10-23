@@ -3,6 +3,8 @@ defmodule MemGpt.Agent.Functions.SendUserMessage do
   This module is responsible for sending a message to the human user.
   """
 
+  @function_name :send_user_message
+
   @doc """
   Returns the function schema to pass to the LLM
 
@@ -13,7 +15,7 @@ defmodule MemGpt.Agent.Functions.SendUserMessage do
   @spec schema() :: map()
   def schema do
     %{
-      name: "send_user_message",
+      name: to_string(@function_name),
       description: "Sends a message to the human user",
       parameters: %{
         type: "object",

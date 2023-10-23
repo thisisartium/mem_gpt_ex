@@ -6,6 +6,7 @@ defmodule MemGpt.Llm do
   use Knigge, otp_app: :mem_gpt, default: __MODULE__.Impl
 
   alias MemGpt.Agent.Context
+  alias MemGpt.Agent.FunctionCall
   alias MemGpt.Agent.Message
   alias MemGpt.Llm.OpenAi
 
@@ -35,11 +36,38 @@ defmodule MemGpt.Llm do
         iex> MemGpt.Llm.Impl.chat_completion(context, [])
         {:ok, context}
     """
-    def chat_completion(%Context{} = context, _options) do
-      {:ok, %{choices: [%{"message" => %{"content" => content}}]}} =
-        OpenAi.chat_completion(messages: MessageList.convert(context), model: "gpt-4-0613")
+    def chat_completion(%Context{} = context, options) do
+      messages = MessageList.convert(context)
 
-      message = Message.new(:assistant, content)
+      options =
+        Keyword.validate!(
+          options,
+          messages: messages,
+          model: "gpt-4-0613",
+          frequency_penalty: nil,
+          function_call: "auto",
+          functions: [],
+          logit_bias: nil,
+          max_tokens: nil,
+          n: nil,
+          presence_penalty: nil,
+          stop: nil,
+          stream: false,
+          temperature: nil,
+          top_p: nil,
+          user: nil
+        )
+        |> Keyword.reject(fn {_k, v} -> v == nil end)
+
+      message =
+        case OpenAi.chat_completion(options) do
+          {:ok, %{choices: [%{"message" => %{"function_call" => function_call}}]}} ->
+            FunctionCall.Conversion.convert(function_call)
+
+          {:ok, %{choices: [%{"message" => %{"content" => content}}]}} when is_binary(content) ->
+            Message.new(:assistant, content)
+        end
+
       context = Context.append_message(context, message)
       {:ok, context}
     end

@@ -16,6 +16,7 @@ defmodule MemGpt.Agent.Context do
   """
   use TypedStruct
 
+  alias MemGpt.Agent.FunctionCall
   alias MemGpt.Agent.Message
   alias MemGpt.Llm.OpenAi.MessageList
 
@@ -33,9 +34,10 @@ defmodule MemGpt.Agent.Context do
       %MemGpt.Agent.Context{messages: []}
 
   """
-  @spec new() :: t()
-  def new do
-    %__MODULE__{}
+  @spec new(system_message :: binary()) :: t()
+  def new(system_message) when is_binary(system_message) do
+    system_message = Message.new(:system, system_message)
+    %__MODULE__{messages: [system_message]}
   end
 
   @doc """
@@ -51,8 +53,12 @@ defmodule MemGpt.Agent.Context do
       %Message{role: :user, content: "Hello, world!"}
 
   """
-  @spec append_message(t(), Message.t()) :: t()
+  @spec append_message(t(), Message.t() | FunctionCall.t()) :: t()
   def append_message(%__MODULE__{} = context, %Message{} = message) do
+    %{context | messages: context.messages ++ [message]}
+  end
+
+  def append_message(%__MODULE__{} = context, %FunctionCall{} = message) do
     %{context | messages: context.messages ++ [message]}
   end
 

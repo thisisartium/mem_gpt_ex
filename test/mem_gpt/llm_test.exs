@@ -4,6 +4,8 @@ defmodule MemGpt.LlmTest do
   use MemGpt.TestCase, async: true
 
   alias MemGpt.Agent.Context
+  alias MemGpt.Agent.FunctionCall
+  alias MemGpt.Agent.Functions.SendUserMessage
   alias MemGpt.Agent.Message
   alias MemGpt.Llm.Impl, as: Llm
   alias MemGpt.Llm.OpenAi
@@ -15,14 +17,21 @@ defmodule MemGpt.LlmTest do
       assistant_message = Message.new(:assistant, Faker.Lorem.sentence())
 
       context =
-        Context.new()
+        Context.new("system message")
         |> Context.append_message(user_message)
 
       expected_context = Context.append_message(context, assistant_message)
 
+      options = [
+        function_call: "auto",
+        functions: [SendUserMessage.schema()]
+      ]
+
       expect(OpenAi.Mock, :chat_completion, fn params ->
         assert Keyword.get(params, :messages) == MessageList.convert(context)
         assert Keyword.get(params, :model) == "gpt-4-0613"
+        assert Keyword.get(params, :function_call) == "auto"
+        assert Keyword.get(params, :functions) == [SendUserMessage.schema()]
 
         {:ok,
          %{
@@ -48,7 +57,61 @@ defmodule MemGpt.LlmTest do
          }}
       end)
 
-      assert Llm.chat_completion(context, []) == {:ok, expected_context}
+      assert Llm.chat_completion(context, options) == {:ok, expected_context}
+    end
+
+    test "handles function call responses from the LLM" do
+      user_message = Message.new(:user, Faker.Lorem.sentence())
+
+      assistant_message =
+        FunctionCall.new(:send_user_message, message: Faker.Lorem.sentence())
+
+      context =
+        Context.new("system message")
+        |> Context.append_message(user_message)
+
+      expected_context = Context.append_message(context, assistant_message)
+
+      options = [
+        function_call: "auto",
+        functions: [SendUserMessage.schema()]
+      ]
+
+      expect(OpenAi.Mock, :chat_completion, fn params ->
+        assert Keyword.get(params, :messages) == MessageList.convert(context)
+        assert Keyword.get(params, :model) == "gpt-4-0613"
+        assert Keyword.get(params, :function_call) == "auto"
+        assert Keyword.get(params, :functions) == [SendUserMessage.schema()]
+
+        {:ok,
+         %{
+           choices: [
+             %{
+               "finish_reason" => "stop",
+               "index" => 0,
+               "message" => %{
+                 "content" => nil,
+                 "function_call" => %{
+                   "name" => "send_user_message",
+                   "arguments" => %{"message" => assistant_message.args["message"]}
+                 },
+                 "role" => "assistant"
+               }
+             }
+           ],
+           created: 1_677_773_799,
+           id: "chatcmpl-6pftfA4NO9pOQIdxao6Z4McDlx90l",
+           model: "gpt-4-0613",
+           object: "chat.completion",
+           usage: %{
+             "completion_tokens" => 26,
+             "prompt_tokens" => 56,
+             "total_tokens" => 82
+           }
+         }}
+      end)
+
+      assert Llm.chat_completion(context, options) == {:ok, expected_context}
     end
   end
 end
