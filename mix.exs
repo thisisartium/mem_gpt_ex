@@ -1,4 +1,4 @@
-defmodule MemGPT.MixProject do
+defmodule MemGpt.MixProject do
   use Mix.Project
 
   def project do
@@ -11,7 +11,7 @@ defmodule MemGPT.MixProject do
       deps: deps(),
       elixirc_paths: elixirc_paths(Mix.env()),
       docs: [
-        main: "MemGPT",
+        main: "MemGpt",
         extras: ["README.md"]
       ]
     ]
@@ -20,7 +20,7 @@ defmodule MemGPT.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      mod: {MemGPT.Application, []},
+      mod: {MemGpt.Application, []},
       extra_applications: [:logger]
     ]
   end

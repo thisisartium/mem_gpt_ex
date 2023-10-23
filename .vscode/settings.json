@@ -1,3 +1,4 @@
 {
-    "shellcheck.enable": true
+    "shellcheck.enable": true,
+    "liveServer.settings.root": "/doc"
 }

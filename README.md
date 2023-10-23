@@ -1,4 +1,4 @@
-# MemGPT
+# MemGpt
 
 **TODO: Add description**
 

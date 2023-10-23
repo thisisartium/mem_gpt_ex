@@ -1,8 +1,4 @@
-defmodule MemGPTTest do
-  use ExUnit.Case
-  doctest MemGPT
-
-  test "greets the world" do
-    assert MemGPT.hello() == :world
-  end
+defmodule MemGptTest do
+  use MemGpt.TestCase, async: true
+  doctest MemGpt
 end

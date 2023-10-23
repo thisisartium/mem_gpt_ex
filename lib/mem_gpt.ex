@@ -1,18 +1,5 @@
-defmodule MemGPT do
+defmodule MemGpt do
   @moduledoc """
-  Documentation for `MemGPT`.
+  This module defines the MemGpt application.
   """
-
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> MemGPT.hello()
-      :world
-
-  """
-  def hello do
-    :world
-  end
 end
