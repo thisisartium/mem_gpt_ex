@@ -17,6 +17,7 @@ defmodule MemGpt.Agent do
 
   alias MemGpt.Agent.Context
   alias MemGpt.Agent.Message
+  alias MemGpt.Llm
 
   @type id :: binary()
 
@@ -164,7 +165,12 @@ defmodule MemGpt.Agent do
   @spec handle_process_user_message(t(), binary()) :: t()
   def handle_process_user_message(state, message_text) do
     message = Message.new(:user, message_text)
-    update_in(state.context, &Context.append_message(&1, message))
+
+    state =
+      update_in(state.context, &Context.append_message(&1, message))
+
+    {:ok, context} = Llm.chat_completion(state.context, [])
+    %{state | context: context}
   end
 
   @spec noreply(t()) :: {:noreply, t()}

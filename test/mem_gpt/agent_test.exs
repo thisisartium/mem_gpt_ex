@@ -52,6 +52,14 @@ defmodule MemGpt.AgentTest do
   end
 
   describe "handle_process_user_message/2" do
+    setup _ do
+      stub(MemGpt.Llm.Mock, :chat_completion, fn context, _options ->
+        {:ok, context}
+      end)
+
+      :ok
+    end
+
     test "it appends the user message to the end of the context window" do
       message_text = Faker.Lorem.sentence()
 
@@ -63,6 +71,22 @@ defmodule MemGpt.AgentTest do
                role: :user,
                content: message_text
              }
+    end
+
+    test "it processes the user message with the LLM" do
+      user_message = Message.new(:user, Faker.Lorem.sentence())
+
+      context =
+        Agent.Context.new()
+        |> Agent.Context.append_message(user_message)
+
+      expect(MemGpt.Llm.Mock, :chat_completion, fn received_context, _options ->
+        assert received_context == context
+        {:ok, context}
+      end)
+
+      Agent.new(UUID.uuid4())
+      |> Agent.handle_process_user_message(user_message.content)
     end
   end
 end

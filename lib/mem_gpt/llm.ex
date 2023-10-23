@@ -6,6 +6,8 @@ defmodule MemGpt.Llm do
   use Knigge, otp_app: :mem_gpt, default: __MODULE__.Impl
 
   alias MemGpt.Agent.Context
+  alias MemGpt.Agent.Message
+  alias MemGpt.Llm.OpenAi
 
   @callback chat_completion(context :: Context.t(), options :: Keyword.t()) ::
               {:ok, Context.t()} | {:error, term()}
@@ -16,6 +18,8 @@ defmodule MemGpt.Llm do
     """
 
     @behaviour MemGpt.Llm
+
+    alias MemGpt.Llm.OpenAi.MessageList
 
     @impl true
     @doc """
@@ -32,6 +36,11 @@ defmodule MemGpt.Llm do
         {:ok, context}
     """
     def chat_completion(%Context{} = context, _options) do
+      {:ok, %{choices: [%{"message" => %{"content" => content}}]}} =
+        OpenAi.chat_completion(messages: MessageList.convert(context), model: "gpt-4-0613")
+
+      message = Message.new(:assistant, content)
+      context = Context.append_message(context, message)
       {:ok, context}
     end
   end
