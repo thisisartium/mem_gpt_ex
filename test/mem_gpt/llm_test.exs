@@ -17,7 +17,7 @@ defmodule MemGpt.LlmTest do
       assistant_message = Message.new(:assistant, Faker.Lorem.sentence())
 
       context =
-        Context.new("system message")
+        Context.new(UUID.uuid4(), "system message")
         |> Context.append_message(user_message)
 
       expected_context = Context.append_message(context, assistant_message)
@@ -67,7 +67,7 @@ defmodule MemGpt.LlmTest do
         FunctionCall.new(:send_user_message, message: Faker.Lorem.sentence())
 
       context =
-        Context.new("system message")
+        Context.new(UUID.uuid4(), "system message")
         |> Context.append_message(user_message)
 
       expected_context = Context.append_message(context, assistant_message)

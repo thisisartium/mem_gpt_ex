@@ -22,6 +22,7 @@ defmodule MemGpt.Agent.Context do
 
   @derive Jason.Encoder
   typedstruct do
+    field(:agent_id, Agent.id(), enforce: true)
     field(:messages, list(Message.t()), default: [])
   end
 
@@ -34,10 +35,10 @@ defmodule MemGpt.Agent.Context do
       %MemGpt.Agent.Context{messages: []}
 
   """
-  @spec new(system_message :: binary()) :: t()
-  def new(system_message) when is_binary(system_message) do
+  @spec new(agent_id :: Agent.id(), system_message :: binary()) :: t()
+  def new(agent_id, system_message) when is_binary(agent_id) and is_binary(system_message) do
     system_message = Message.new(:system, system_message)
-    %__MODULE__{messages: [system_message]}
+    %__MODULE__{agent_id: agent_id, messages: [system_message]}
   end
 
   @doc """

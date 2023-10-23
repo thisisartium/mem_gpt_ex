@@ -21,10 +21,14 @@ defmodule MemGpt.AgentTest do
       assert %Agent{id: ^agent_id} = :sys.get_state(agent_pid)
     end
 
-    test "the agent context is initialized with the agent's system message" do
-      {:ok, _agent_id, agent_pid} = Agent.boot()
+    test "the agent context is initialized with the agent's system message and id" do
+      {:ok, agent_id, agent_pid} = Agent.boot()
 
-      assert Agent.Context.last_message(:sys.get_state(agent_pid).context) ==
+      agent_context = :sys.get_state(agent_pid).context
+
+      assert agent_context.agent_id == agent_id
+
+      assert Agent.Context.last_message(agent_context) ==
                Message.new(:system, Agent.system_message())
     end
   end
@@ -84,8 +88,10 @@ defmodule MemGpt.AgentTest do
     test "it processes the user message with the LLM" do
       user_message = Message.new(:user, Faker.Lorem.sentence())
 
+      agent_id = UUID.uuid4()
+
       context =
-        Agent.Context.new(Agent.system_message())
+        Agent.Context.new(agent_id, Agent.system_message())
         |> Agent.Context.append_message(user_message)
 
       expect(MemGpt.Llm.Mock, :chat_completion, fn received_context, _options ->
@@ -93,7 +99,7 @@ defmodule MemGpt.AgentTest do
         {:ok, context}
       end)
 
-      Agent.new(UUID.uuid4())
+      Agent.new(agent_id)
       |> Agent.handle_process_user_message(user_message.content)
     end
 
