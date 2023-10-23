@@ -3,6 +3,8 @@ defmodule MemGPT.AgentTest do
 
   use MemGPT.TestCase, async: true
 
+  doctest MemGPT.Agent
+
   describe "boot/0" do
     test "returns the Agent ID and the pid of the running Agent" do
       {:ok, agent_id, agent_pid} = MemGPT.Agent.boot()
