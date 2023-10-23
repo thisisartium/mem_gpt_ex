@@ -47,10 +47,10 @@ defmodule MemGpt.Llm.OpenAi do
     @moduledoc """
     This protocol defines the interface for converting a message list to a format suitable for the OpenAI API.
     """
-    @spec convert(t()) :: MessageList.t()
     @doc """
     Converts a message list to a format suitable for the OpenAI API.
     """
+    @spec convert(t()) :: MessageList.t()
     def convert(message_list)
   end
 
