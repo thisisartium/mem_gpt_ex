@@ -38,20 +38,26 @@ defmodule MemGPT.Agent do
   Finds the Agent with the given ID and returns its PID
   """
   def find_agent_by_id(id) do
-    DynamicSupervisor.which_children(MemGPT.DynamicSupervisor)
-    |> Enum.find(fn
-      {_, pid, :worker, [_]} ->
-        case :sys.get_state(pid) do
-          %MemGPT.Agent{id: ^id} -> true
-          _ -> false
-        end
+    agent = find_agent_in_supervisor(id)
 
-      _ ->
-        false
-    end)
-    |> case do
+    case agent do
       nil -> {:error, :not_found}
       {_, pid, _, _} -> {:ok, pid}
+    end
+  end
+
+  defp find_agent_in_supervisor(id) do
+    DynamicSupervisor.which_children(MemGPT.DynamicSupervisor)
+    |> Enum.find(fn
+      {_, pid, :worker, [_]} -> agent_with_matching_id?(pid, id)
+      _ -> false
+    end)
+  end
+
+  defp agent_with_matching_id?(pid, id) do
+    case :sys.get_state(pid) do
+      %MemGPT.Agent{id: ^id} -> true
+      _ -> false
     end
   end
 end
