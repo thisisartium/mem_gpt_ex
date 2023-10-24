@@ -3,12 +3,15 @@ defmodule MemGpt.Agent.FunctionCall do
   A FunctionCall represents a function call with a name and arguments.
   """
 
+  use Knigge, otp_app: :mem_gpt, default: __MODULE__.Impl
   use TypedStruct
 
   typedstruct do
     field(:name, atom(), enforce: true)
     field(:args, map(), enforce: true)
   end
+
+  @callback execute(t()) :: {:ok, term()} | {:error, term()}
 
   @doc """
   Creates a new FunctionCall struct with the given name and args.
@@ -41,6 +44,16 @@ defmodule MemGpt.Agent.FunctionCall do
     """
     @spec convert(data :: term()) :: FunctionCall.t()
     def convert(data)
+  end
+
+  defmodule Impl do
+    @moduledoc false
+    @behaviour MemGpt.Agent.FunctionCall
+
+    @impl true
+    def execute(_arg) do
+      {:error, :not_implemented}
+    end
   end
 end
 

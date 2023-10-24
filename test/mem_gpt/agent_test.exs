@@ -4,6 +4,8 @@ defmodule MemGpt.AgentTest do
   use MemGpt.TestCase, async: true
 
   alias MemGpt.Agent
+  alias MemGpt.Agent.Context
+  alias MemGpt.Agent.FunctionCall
   alias MemGpt.Agent.Functions.SendUserMessage
   alias MemGpt.Agent.Message
 
@@ -103,6 +105,22 @@ defmodule MemGpt.AgentTest do
         functions = Keyword.get(options, :functions, [])
         assert SendUserMessage.schema() in functions
         {:ok, received_context}
+      end)
+
+      Agent.new(UUID.uuid4())
+      |> Agent.handle_process_user_message(Faker.Lorem.sentence())
+    end
+
+    test "if the llm response is a function call, it executes the function" do
+      function_call = FunctionCall.new(:some_function, %{"foo" => "bar"})
+
+      expect(MemGpt.Llm.Mock, :chat_completion, fn context, _options ->
+        {:ok, Context.append_message(context, function_call)}
+      end)
+
+      expect(FunctionCall.Mock, :execute, fn received_function_call ->
+        assert received_function_call == function_call
+        {:ok, "some response"}
       end)
 
       Agent.new(UUID.uuid4())

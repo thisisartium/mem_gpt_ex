@@ -22,7 +22,7 @@ defmodule MemGpt.Agent.Context do
 
   @derive Jason.Encoder
   typedstruct do
-    field(:messages, list(Message.t()), default: [])
+    field(:messages, list(Message.t() | FunctionCall.t()), default: [])
   end
 
   @doc """
@@ -54,11 +54,8 @@ defmodule MemGpt.Agent.Context do
 
   """
   @spec append_message(t(), Message.t() | FunctionCall.t()) :: t()
-  def append_message(%__MODULE__{} = context, %Message{} = message) do
-    %{context | messages: context.messages ++ [message]}
-  end
-
-  def append_message(%__MODULE__{} = context, %FunctionCall{} = message) do
+  def append_message(%__MODULE__{} = context, message)
+      when is_struct(message, Message) or is_struct(message, FunctionCall) do
     %{context | messages: context.messages ++ [message]}
   end
 
@@ -75,7 +72,7 @@ defmodule MemGpt.Agent.Context do
       %Message{role: :user, content: "Hello, world!"}
 
   """
-  @spec last_message(t()) :: Message.t()
+  @spec last_message(t()) :: Message.t() | FunctionCall.t()
   def last_message(%__MODULE__{messages: messages}) do
     List.last(messages)
   end

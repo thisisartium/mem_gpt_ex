@@ -16,6 +16,7 @@ defmodule MemGpt.Agent do
   use TypedStruct
 
   alias MemGpt.Agent.Context
+  alias MemGpt.Agent.FunctionCall
   alias MemGpt.Agent.Functions.SendUserMessage
   alias MemGpt.Agent.Message
   alias MemGpt.Llm
@@ -194,18 +195,37 @@ defmodule MemGpt.Agent do
   """
   @spec handle_process_user_message(t(), binary()) :: t()
   def handle_process_user_message(state, message_text) do
-    message = Message.new(:user, message_text)
-
-    state =
-      update_in(state.context, &Context.append_message(&1, message))
-
-    {:ok, context} =
-      Llm.chat_completion(state.context,
-        function_call: "auto",
-        functions: [SendUserMessage.schema()]
-      )
-
+    message = create_user_message(message_text)
+    state = append_message_to_context(state, message)
+    {:ok, context} = chat_completion(state)
+    context = handle_last_message(context)
     %{state | context: context}
+  end
+
+  defp create_user_message(message_text) do
+    Message.new(:user, message_text)
+  end
+
+  defp append_message_to_context(state, message) do
+    update_in(state.context, &Context.append_message(&1, message))
+  end
+
+  defp chat_completion(state) do
+    Llm.chat_completion(state.context,
+      function_call: "auto",
+      functions: [SendUserMessage.schema()]
+    )
+  end
+
+  defp handle_last_message(context) do
+    case Context.last_message(context) do
+      %Message{} ->
+        context
+
+      %FunctionCall{} = function_call ->
+        FunctionCall.execute(function_call)
+        context
+    end
   end
 
   @spec noreply(t()) :: {:noreply, t()}
