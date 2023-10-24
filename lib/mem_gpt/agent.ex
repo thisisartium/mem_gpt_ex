@@ -68,7 +68,7 @@ defmodule MemGpt.Agent do
   """
   @spec new(id()) :: t()
   def new(id) when is_binary(id) do
-    %__MODULE__{id: id, context: Context.new(id, system_message())}
+    %__MODULE__{id: id, context: Context.new(system_message())}
   end
 
   @doc """
