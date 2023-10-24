@@ -93,7 +93,7 @@ defmodule MemGpt.LlmTest do
                  "content" => nil,
                  "function_call" => %{
                    "name" => "send_user_message",
-                   "arguments" => %{"message" => assistant_message.args["message"]}
+                   "arguments" => %{"message" => assistant_message.arguments["message"]}
                  },
                  "role" => "assistant"
                }

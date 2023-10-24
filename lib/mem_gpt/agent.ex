@@ -50,7 +50,6 @@ defmodule MemGpt.Agent do
     To send a visible message to the user, use the send_user_message function.
     'send_user_message ' is the ONLY action that sends a notification to the user, the user does not see anything else you do.
     Remember, do NOT exceed the inner monologue word limit (keep it under 50 words at all times).
-    Respond to the user with the `send_user_message` function as soon as you have completed enough of your thoughts to provide meaningful feedback to the user.
 
     Base instructions finished.
     From now on, you are going to act as your persona.

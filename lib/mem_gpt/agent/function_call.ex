@@ -8,7 +8,7 @@ defmodule MemGpt.Agent.FunctionCall do
 
   typedstruct do
     field(:name, atom(), enforce: true)
-    field(:args, map(), enforce: true)
+    field(:arguments, map(), enforce: true)
   end
 
   @callback execute(t()) :: {:ok, term()} | {:error, term()}
@@ -26,7 +26,7 @@ defmodule MemGpt.Agent.FunctionCall do
   @spec new(atom(), map() | keyword()) :: t()
   def new(name, args) when is_atom(name) and is_map(args) do
     args = for {k, v} <- args, into: %{}, do: {Kernel.to_string(k), v}
-    %__MODULE__{name: name, args: args}
+    %__MODULE__{name: name, arguments: args}
   end
 
   def new(name, args) when is_list(args) do
@@ -70,5 +70,26 @@ defimpl MemGpt.Agent.FunctionCall.Conversion, for: Map do
 
   def convert(%{"name" => name, "arguments" => args}) when is_binary(name) and is_map(args) do
     FunctionCall.new(String.to_existing_atom(name), args)
+  end
+end
+
+defimpl Jason.Encoder, for: MemGpt.Agent.FunctionCall do
+  alias MemGpt.Agent.FunctionCall
+
+  @doc """
+  Serializes the FunctionCall struct into the JSON format expected by OpenAI.
+  """
+  def encode(%FunctionCall{name: name, arguments: args}, opts) do
+    Jason.Encoder.encode(
+      %{
+        role: "assistant",
+        function_call: %{
+          name: name,
+          arguments: Jason.encode!(args)
+        },
+        content: nil
+      },
+      opts
+    )
   end
 end
