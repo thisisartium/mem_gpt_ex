@@ -24,8 +24,12 @@ defmodule MemGpt.Agent.Functions.ConversationSearch do
               "Request an immediate heartbeat after function execution. Set to 'true' if you want to send a follow-up message or run a follow-up function."
           }
         },
-        required: ["name", "page", "request_heartbeat"]
+        required: ["name", "request_heartbeat"]
       }
     }
+  end
+
+  def execute(%{"query" => _query, "request_heartbeat" => request_heartbeat}) do
+    {if(request_heartbeat, do: :cont, else: :ok), []}
   end
 end

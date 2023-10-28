@@ -25,4 +25,8 @@ defmodule MemGpt.Agent.Functions.ArchivalMemoryInsert do
       }
     }
   end
+
+  def execute(%{"content" => _content, "request_heartbeat" => request_heartbeat}) do
+    {if(request_heartbeat, do: :cont, else: :ok), nil}
+  end
 end

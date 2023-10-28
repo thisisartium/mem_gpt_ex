@@ -1,13 +1,12 @@
-defmodule MemGpt.Agent.MessageTest do
+defmodule MemGpt.Agent.UserMessageTest do
   use MemGpt.TestCase, async: true
 
-  alias MemGpt.Agent.Message
+  alias MemGpt.Agent.UserMessage
 
   describe "new/2" do
-    test "returns a new Message struct with the attributes set correctly" do
-      role = :user
+    test "returns a new UserMessage struct with the attributes set correctly" do
       content = Faker.Lorem.sentence()
-      assert %Message{role: ^role, content: ^content} = Message.new(role, content)
+      assert %UserMessage{message: ^content} = UserMessage.new(content)
     end
   end
 end

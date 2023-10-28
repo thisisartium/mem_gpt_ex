@@ -23,8 +23,9 @@ defmodule MemGpt.Agent.FunctionCall do
       iex> MemGpt.Agent.FunctionCall.new(:send_user_message, %{"message" => "Hello, world!"})
       %MemGpt.Agent.FunctionCall{name: :send_user_message, args: %{"message" => "Hello, world!"}}
   """
-  @spec new(atom(), map() | keyword()) :: t()
-  def new(name, args) when is_atom(name) and is_map(args) do
+  @spec new(String.t(), map() | keyword()) :: t()
+  def new(name, args) when is_map(args) do
+    name = to_string(name)
     args = for {k, v} <- args, into: %{}, do: {Kernel.to_string(k), v}
     %__MODULE__{name: name, arguments: args}
   end
@@ -48,11 +49,29 @@ defmodule MemGpt.Agent.FunctionCall do
 
   defmodule Impl do
     @moduledoc false
+
     @behaviour MemGpt.Agent.FunctionCall
 
+    alias MemGpt.Agent.Functions.ArchivalMemoryInsert
+    alias MemGpt.Agent.Functions.ArchivalMemorySearch
+    alias MemGpt.Agent.Functions.ConversationSearch
+    alias MemGpt.Agent.Functions.CoreMemoryAppend
+    alias MemGpt.Agent.Functions.CoreMemoryReplace
+    alias MemGpt.Agent.Functions.SendUserMessage
+
     @impl true
-    def execute(_arg) do
-      {:error, :not_implemented}
+    def execute(%MemGpt.Agent.FunctionCall{name: function_name, arguments: arguments}) do
+      module =
+        case function_name do
+          "archival_memory_insert" -> ArchivalMemoryInsert
+          "archival_memory_search" -> ArchivalMemorySearch
+          "conversation_search" -> ConversationSearch
+          "core_memory_append" -> CoreMemoryAppend
+          "core_memory_replace" -> CoreMemoryReplace
+          "send_user_message" -> SendUserMessage
+        end
+
+      module.execute(arguments)
     end
   end
 end

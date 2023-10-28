@@ -5,13 +5,13 @@ defmodule MemGpt.Agent.FunctionCallTest do
 
   describe "new/2" do
     test "returns a new FunctionCall struct with the attributes set correctly" do
-      name = :some_function
+      name = "some_function"
       args = %{"argument" => "value"}
       assert %FunctionCall{name: ^name, arguments: ^args} = FunctionCall.new(name, args)
     end
 
     test "handles setting arguments as a keyword list" do
-      name = :some_function
+      name = "some_function"
       args = [argument: "value"]
       expected_args = %{"argument" => "value"}
       assert %FunctionCall{name: ^name, arguments: ^expected_args} = FunctionCall.new(name, args)
@@ -23,7 +23,7 @@ defmodule MemGpt.Agent.FunctionCallTest do
       input = %{"name" => "send_user_message", "arguments" => %{"message" => "Hello, world!"}}
 
       assert FunctionCall.Conversion.convert(input) ==
-               FunctionCall.new(:send_user_message, %{"message" => "Hello, world!"})
+               FunctionCall.new("send_user_message", %{"message" => "Hello, world!"})
     end
 
     test "converts a function call map with JSON string of arguments" do
@@ -33,13 +33,13 @@ defmodule MemGpt.Agent.FunctionCallTest do
       }
 
       assert FunctionCall.Conversion.convert(input) ==
-               FunctionCall.new(:send_user_message, %{"message" => "Hello, world!"})
+               FunctionCall.new("send_user_message", %{"message" => "Hello, world!"})
     end
   end
 
   describe "serialization" do
     test "serializes to the JSON format expected by OpenAI" do
-      function_call = FunctionCall.new(:send_user_message, %{"message" => "Hello, world!"})
+      function_call = FunctionCall.new("send_user_message", %{"message" => "Hello, world!"})
 
       assert Jason.encode!(function_call) ==
                Jason.encode!(%{

@@ -33,4 +33,13 @@ defmodule MemGpt.Agent.Functions.CoreMemoryReplace do
       }
     }
   end
+
+  def execute(%{
+        "name" => _name,
+        "old_content" => _old_content,
+        "new_content" => _new_content,
+        "request_heartbeat" => request_heartbeat
+      }) do
+    {if(request_heartbeat, do: :cont, else: :ok), nil}
+  end
 end

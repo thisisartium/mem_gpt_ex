@@ -28,4 +28,8 @@ defmodule MemGpt.Agent.Functions.CoreMemoryAppend do
       }
     }
   end
+
+  def execute(%{"name" => _name, "content" => _content, "request_heartbeat" => request_heartbeat}) do
+    {if(request_heartbeat, do: :cont, else: :ok), nil}
+  end
 end

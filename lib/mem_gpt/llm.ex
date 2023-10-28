@@ -7,7 +7,8 @@ defmodule MemGpt.Llm do
 
   alias MemGpt.Agent.Context
   alias MemGpt.Agent.FunctionCall
-  alias MemGpt.Agent.Message
+  alias MemGpt.Agent.Thought
+
   alias MemGpt.Llm.OpenAi
 
   @callback chat_completion(context :: Context.t(), options :: Keyword.t()) ::
@@ -37,7 +38,8 @@ defmodule MemGpt.Llm do
         {:ok, context}
     """
     def chat_completion(%Context{} = context, options) do
-      messages = MessageList.convert(context)
+      messages =
+        MessageList.convert(context)
 
       options =
         Keyword.validate!(
@@ -65,7 +67,7 @@ defmodule MemGpt.Llm do
             FunctionCall.Conversion.convert(function_call)
 
           {:ok, %{choices: [%{"message" => %{"content" => content}}]}} when is_binary(content) ->
-            Message.new(:assistant, content)
+            Thought.new(content)
         end
 
       context = Context.append_message(context, message)

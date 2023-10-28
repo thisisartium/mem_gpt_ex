@@ -3,18 +3,19 @@ defmodule MemGpt.LlmTest do
 
   use MemGpt.TestCase, async: true
 
+  alias MemGpt.Agent.Thought
   alias MemGpt.Agent.Context
   alias MemGpt.Agent.FunctionCall
   alias MemGpt.Agent.Functions.SendUserMessage
-  alias MemGpt.Agent.Message
+  alias MemGpt.Agent.UserMessage
   alias MemGpt.Llm.Impl, as: Llm
   alias MemGpt.Llm.OpenAi
   alias MemGpt.Llm.OpenAi.MessageList
 
   describe "chat_completion/2" do
     test "returns {:ok, context} if the chat completion is successful" do
-      user_message = Message.new(:user, Faker.Lorem.sentence())
-      assistant_message = Message.new(:assistant, Faker.Lorem.sentence())
+      user_message = UserMessage.new(Faker.Lorem.sentence())
+      assistant_message = Thought.new(Faker.Lorem.sentence())
 
       context =
         Context.new("system message")
@@ -40,7 +41,7 @@ defmodule MemGpt.LlmTest do
                "finish_reason" => "stop",
                "index" => 0,
                "message" => %{
-                 "content" => assistant_message.content,
+                 "content" => assistant_message.thought,
                  "role" => "assistant"
                }
              }
@@ -61,7 +62,7 @@ defmodule MemGpt.LlmTest do
     end
 
     test "handles function call responses from the LLM" do
-      user_message = Message.new(:user, Faker.Lorem.sentence())
+      user_message = UserMessage.new(Faker.Lorem.sentence())
 
       assistant_message =
         FunctionCall.new(:send_user_message, message: Faker.Lorem.sentence())

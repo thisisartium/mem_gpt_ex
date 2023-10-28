@@ -22,11 +22,18 @@ defmodule MemGpt.Agent.Functions.SendUserMessage do
         properties: %{
           message: %{
             type: "string",
-            description: "Message contents. All unicode (including emojis) are supported."
+            description: "UserMessage contents. All unicode (including emojis) are supported."
           }
         },
         required: ["message"]
       }
     }
+  end
+
+  def execute(%{
+        "message" => message
+      }) do
+    IO.puts(message)
+    {:ok, nil}
   end
 end

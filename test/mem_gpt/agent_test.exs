@@ -1,13 +1,15 @@
 defmodule MemGpt.AgentTest do
   @moduledoc false
 
-  use MemGpt.TestCase, async: true
+  use MemGpt.TestCase
 
   alias MemGpt.Agent
   alias MemGpt.Agent.Context
   alias MemGpt.Agent.FunctionCall
   alias MemGpt.Agent.Functions.SendUserMessage
-  alias MemGpt.Agent.Message
+  alias MemGpt.Agent.SystemMessage
+  alias MemGpt.Agent.Thought
+  alias MemGpt.Agent.UserMessage
 
   import Mox
 
@@ -26,8 +28,8 @@ defmodule MemGpt.AgentTest do
     test "the agent context is initialized with the agent's system message" do
       {:ok, _agent_id, agent_pid} = Agent.boot()
 
-      assert Agent.Context.last_message(:sys.get_state(agent_pid).context) ==
-               Message.new(:system, Agent.system_message())
+      assert :sys.get_state(agent_pid).context.system_message ==
+               SystemMessage.new(Agent.system_message())
     end
   end
 
@@ -70,31 +72,11 @@ defmodule MemGpt.AgentTest do
       :ok
     end
 
-    test "it appends the user message to the end of the context window" do
-      message_text = Faker.Lorem.sentence()
-
-      %Agent{context: context} =
-        Agent.new(UUID.uuid4())
-        |> Agent.handle_process_user_message(message_text)
-
-      assert %Message{role: :user, content: content} = Agent.Context.last_message(context)
-
-      assert %{"type" => "user_message", "message" => ^message_text, "time" => time} =
-               Jason.decode!(content)
-
-      assert {:ok, _, 0} = DateTime.from_iso8601(time)
-    end
-
     test "it processes the user message with the LLM" do
       message_text = Faker.Lorem.sentence()
 
       expect(MemGpt.Llm.Mock, :chat_completion, fn received_context, _options ->
-        assert %Message{role: :user, content: content} = Context.last_message(received_context)
-
-        assert %{"type" => "user_message", "message" => ^message_text, "time" => time} =
-                 Jason.decode!(content)
-
-        assert {:ok, _, 0} = DateTime.from_iso8601(time)
+        assert %UserMessage{message: ^message_text} = Context.last_message(received_context)
         {:ok, received_context}
       end)
 
@@ -114,7 +96,7 @@ defmodule MemGpt.AgentTest do
       |> Agent.handle_process_user_message(Faker.Lorem.sentence())
     end
 
-    test "if the llm response is a function call, it executes the function" do
+    test "if the llm response is a function call, it appends the response as a function call and executes the function" do
       function_call = FunctionCall.new(:some_function, %{"foo" => "bar"})
 
       expect(MemGpt.Llm.Mock, :chat_completion, fn context, _options ->
@@ -128,6 +110,34 @@ defmodule MemGpt.AgentTest do
 
       Agent.new(UUID.uuid4())
       |> Agent.handle_process_user_message(Faker.Lorem.sentence())
+    end
+
+    test "if the llm response is not a function call, it appends the response as a thought and processes the thought with the llm" do
+      message_text = Faker.Lorem.sentence()
+      llm_response = Faker.Lorem.sentence()
+      message_2 = Thought.new(llm_response)
+
+      expect(MemGpt.Llm.Mock, :chat_completion, fn received_context, _options ->
+        assert %UserMessage{message: ^message_text} = Context.last_message(received_context)
+        {:ok, Context.append_message(received_context, message_2)}
+      end)
+
+      expect(MemGpt.Llm.Mock, :chat_completion, fn received_context, _options ->
+        assert %Thought{thought: ^llm_response} = Context.last_message(received_context)
+
+        {:ok,
+         Context.append_message(
+           received_context,
+           FunctionCall.new(:some_function, %{"foo" => "bar"})
+         )}
+      end)
+
+      stub(FunctionCall.Mock, :execute, fn _ ->
+        {:ok, "some response"}
+      end)
+
+      Agent.new(UUID.uuid4())
+      |> Agent.handle_process_user_message(message_text)
     end
   end
 end
