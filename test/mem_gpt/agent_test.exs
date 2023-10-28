@@ -6,6 +6,7 @@ defmodule MemGpt.AgentTest do
   alias MemGpt.Agent
   alias MemGpt.Agent.Context
   alias MemGpt.Agent.FunctionCall
+  alias MemGpt.Agent.FunctionResponse
   alias MemGpt.Agent.Functions.SendUserMessage
   alias MemGpt.Agent.SystemMessage
   alias MemGpt.Agent.Thought
@@ -96,8 +97,9 @@ defmodule MemGpt.AgentTest do
       |> Agent.handle_process_user_message(Faker.Lorem.sentence())
     end
 
-    test "if the llm response is a function call, it appends the response as a function call and executes the function" do
-      function_call = FunctionCall.new(:some_function, %{"foo" => "bar"})
+    test "if the llm response is a function call, it appends the response as a function call, executes the function, and appends the result" do
+      function_call = FunctionCall.new("some_function", %{"foo" => "bar"})
+      function_response = FunctionResponse.new(:ok, "some_function", Faker.Lorem.sentence())
 
       expect(MemGpt.Llm.Mock, :chat_completion, fn context, _options ->
         {:ok, Context.append_message(context, function_call)}
@@ -105,7 +107,7 @@ defmodule MemGpt.AgentTest do
 
       expect(FunctionCall.Mock, :execute, fn received_function_call ->
         assert received_function_call == function_call
-        {:ok, "some response"}
+        function_response
       end)
 
       Agent.new(UUID.uuid4())
@@ -133,7 +135,7 @@ defmodule MemGpt.AgentTest do
       end)
 
       stub(FunctionCall.Mock, :execute, fn _ ->
-        {:ok, "some response"}
+        FunctionResponse.new(:ok, "some_function", Faker.Lorem.sentence())
       end)
 
       Agent.new(UUID.uuid4())

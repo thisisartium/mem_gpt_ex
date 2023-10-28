@@ -17,6 +17,7 @@ defmodule MemGpt.Agent.Context do
   use TypedStruct
 
   alias MemGpt.Agent.FunctionCall
+  alias MemGpt.Agent.FunctionResponse
   alias MemGpt.Agent.SystemMessage
   alias MemGpt.Agent.Thought
   alias MemGpt.Agent.UserMessage
@@ -26,7 +27,15 @@ defmodule MemGpt.Agent.Context do
   typedstruct do
     field(:system_message, SystemMessage.t(), enforce: true)
 
-    field(:messages, list(UserMessage.t() | FunctionCall.t() | Thought.t() | SystemMessage.t()),
+    field(
+      :messages,
+      list(
+        UserMessage.t()
+        | FunctionCall.t()
+        | FunctionResponse.t()
+        | Thought.t()
+        | SystemMessage.t()
+      ),
       default: []
     )
   end
@@ -58,31 +67,20 @@ defmodule MemGpt.Agent.Context do
       %UserMessage{role: :user, content: "Hello, world!"}
 
   """
-  @spec append_message(t(), UserMessage.t() | FunctionCall.t() | Thought.t() | SystemMessage.t()) ::
+  @spec append_message(
+          t(),
+          UserMessage.t()
+          | FunctionCall.t()
+          | FunctionResponse.t()
+          | Thought.t()
+          | SystemMessage.t()
+        ) ::
           t()
   def append_message(%__MODULE__{} = context, message)
       when is_struct(message, UserMessage) or is_struct(message, FunctionCall) or
+             is_struct(message, FunctionResponse) or
              is_struct(message, SystemMessage) or is_struct(message, Thought) do
-    print(message)
     %{context | messages: context.messages ++ [message]}
-  end
-
-  defp print(%UserMessage{}) do
-    :ok
-  end
-
-  defp print(%FunctionCall{name: name, arguments: arguments}) do
-    IO.puts("☑️ - Calling function #{name} with arguments #{inspect(arguments)}")
-    :ok
-  end
-
-  defp print(%SystemMessage{}) do
-    :ok
-  end
-
-  defp print(%Thought{thought: thought}) do
-    IO.puts("🤔 - Thinking... #{thought}")
-    :ok
   end
 
   @doc """
@@ -98,7 +96,12 @@ defmodule MemGpt.Agent.Context do
       %UserMessage{role: :user, content: "Hello, world!"}
 
   """
-  @spec last_message(t()) :: UserMessage.t() | FunctionCall.t() | SystemMessage.t() | Thought.t()
+  @spec last_message(t()) ::
+          UserMessage.t()
+          | FunctionCall.t()
+          | FunctionResponse.t()
+          | SystemMessage.t()
+          | Thought.t()
   def last_message(%__MODULE__{messages: messages}) do
     List.last(messages)
   end

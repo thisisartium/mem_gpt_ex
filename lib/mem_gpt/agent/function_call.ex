@@ -2,6 +2,7 @@ defmodule MemGpt.Agent.FunctionCall do
   @moduledoc """
   A FunctionCall represents a function call with a name and arguments.
   """
+  alias MemGpt.Agent.FunctionResponse
 
   use Knigge, otp_app: :mem_gpt, default: __MODULE__.Impl
   use TypedStruct
@@ -11,7 +12,7 @@ defmodule MemGpt.Agent.FunctionCall do
     field(:arguments, map(), enforce: true)
   end
 
-  @callback execute(t()) :: {:ok, term()} | {:error, term()}
+  @callback execute(t()) :: FunctionResponse.t()
 
   @doc """
   Creates a new FunctionCall struct with the given name and args.
@@ -71,7 +72,8 @@ defmodule MemGpt.Agent.FunctionCall do
           "send_user_message" -> SendUserMessage
         end
 
-      module.execute(arguments)
+      {status, data} = module.execute(arguments)
+      FunctionResponse.new(status, function_name, data)
     end
   end
 end

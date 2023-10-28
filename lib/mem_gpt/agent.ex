@@ -17,6 +17,7 @@ defmodule MemGpt.Agent do
 
   alias MemGpt.Agent.Context
   alias MemGpt.Agent.FunctionCall
+  alias MemGpt.Agent.FunctionResponse
   alias MemGpt.Agent.Functions.ArchivalMemoryInsert
   alias MemGpt.Agent.Functions.ArchivalMemorySearch
   alias MemGpt.Agent.Functions.ConversationSearch
@@ -338,8 +339,16 @@ defmodule MemGpt.Agent do
         process_ai_response(context)
 
       %FunctionCall{} = function_call ->
-        FunctionCall.execute(function_call)
+        function_call
+        |> FunctionCall.execute()
+        |> then(&Context.append_message(context, &1))
+        |> handle_last_message()
+
+      %FunctionResponse{status: :ok} ->
         {:ok, context}
+
+      %FunctionResponse{status: :cont} ->
+        process_ai_response(context)
 
       %UserMessage{} ->
         {:ok, context}
