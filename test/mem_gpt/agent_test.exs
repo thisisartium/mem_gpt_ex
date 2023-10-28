@@ -77,26 +77,29 @@ defmodule MemGpt.AgentTest do
         Agent.new(UUID.uuid4())
         |> Agent.handle_process_user_message(message_text)
 
-      assert Agent.Context.last_message(context) == %Message{
-               role: :user,
-               content: message_text
-             }
+      assert %Message{role: :user, content: content} = Agent.Context.last_message(context)
+
+      assert %{"type" => "user_message", "message" => ^message_text, "time" => time} =
+               Jason.decode!(content)
+
+      assert {:ok, _, 0} = DateTime.from_iso8601(time)
     end
 
     test "it processes the user message with the LLM" do
-      user_message = Message.new(:user, Faker.Lorem.sentence())
-
-      context =
-        Agent.Context.new(Agent.system_message())
-        |> Agent.Context.append_message(user_message)
+      message_text = Faker.Lorem.sentence()
 
       expect(MemGpt.Llm.Mock, :chat_completion, fn received_context, _options ->
-        assert received_context == context
-        {:ok, context}
+        assert %Message{role: :user, content: content} = Context.last_message(received_context)
+
+        assert %{"type" => "user_message", "message" => ^message_text, "time" => time} =
+                 Jason.decode!(content)
+
+        assert {:ok, _, 0} = DateTime.from_iso8601(time)
+        {:ok, received_context}
       end)
 
       Agent.new(UUID.uuid4())
-      |> Agent.handle_process_user_message(user_message.content)
+      |> Agent.handle_process_user_message(message_text)
     end
 
     test "it sends the send_user_message function description to the LLM" do
