@@ -7,7 +7,7 @@ defmodule MemGpt.Agent.FunctionCall do
   use TypedStruct
 
   typedstruct do
-    field(:name, atom(), enforce: true)
+    field(:name, String.t(), enforce: true)
     field(:arguments, map(), enforce: true)
   end
 
@@ -88,7 +88,7 @@ defimpl MemGpt.Agent.FunctionCall.Conversion, for: Map do
   end
 
   def convert(%{"name" => name, "arguments" => args}) when is_binary(name) and is_map(args) do
-    FunctionCall.new(String.to_existing_atom(name), args)
+    FunctionCall.new(name, args)
   end
 end
 

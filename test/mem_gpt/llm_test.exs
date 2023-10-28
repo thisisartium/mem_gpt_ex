@@ -3,10 +3,10 @@ defmodule MemGpt.LlmTest do
 
   use MemGpt.TestCase, async: true
 
-  alias MemGpt.Agent.Thought
   alias MemGpt.Agent.Context
   alias MemGpt.Agent.FunctionCall
   alias MemGpt.Agent.Functions.SendUserMessage
+  alias MemGpt.Agent.Thought
   alias MemGpt.Agent.UserMessage
   alias MemGpt.Llm.Impl, as: Llm
   alias MemGpt.Llm.OpenAi
