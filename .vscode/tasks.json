@@ -2,13 +2,6 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Run Docker Compose",
-			"type": "shell",
-			"command": "docker compose up",
-			"isBackground": true,
-			"problemMatcher": []
-		},
-		{
 			"label": "Run Mix Test Interactive",
 			"type": "shell",
 			"command": "mix test.interactive --stale",
