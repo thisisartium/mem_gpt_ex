@@ -67,7 +67,13 @@ defmodule MemGpt.Llm do
             FunctionCall.Conversion.convert(function_call)
 
           {:ok, %{choices: [%{"message" => %{"content" => content}}]}} when is_binary(content) ->
-            Thought.new(content)
+            case Jason.decode(content) do
+              {:ok, %{"type" => "ai_thought", "thought" => thought}} ->
+                Thought.new(thought)
+
+              _ ->
+                Thought.new(content)
+            end
         end
 
       context = Context.append_message(context, message)

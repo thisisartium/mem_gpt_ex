@@ -41,7 +41,13 @@ defmodule MemGpt.LlmTest do
                "finish_reason" => "stop",
                "index" => 0,
                "message" => %{
-                 "content" => assistant_message.thought,
+                 "content" =>
+                   %{
+                     type: "ai_thought",
+                     thought: assistant_message.thought,
+                     time: DateTime.to_iso8601(assistant_message.time)
+                   }
+                   |> Jason.encode!(),
                  "role" => "assistant"
                }
              }

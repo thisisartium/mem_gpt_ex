@@ -17,7 +17,8 @@ defmodule MemGpt.TestCase do
 
   setup _ do
     stub(MemGpt.Clock.Mock, :now, fn ->
-      DateTime.from_naive(~N[2021-01-01 00:00:00], "Etc/UTC")
+      {:ok, time} = DateTime.from_naive(~N[2021-01-01 00:00:00], "Etc/UTC")
+      time
     end)
 
     :ok
