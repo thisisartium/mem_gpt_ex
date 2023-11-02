@@ -20,7 +20,6 @@ defmodule MemGpt.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      mod: {MemGpt.Application, []},
       extra_applications: [:logger]
     ]
   end
@@ -34,6 +33,7 @@ defmodule MemGpt.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:doctor, "~> 0.21", only: :dev, runtime: false},
+      {:drops, "~> 0.1"},
       {:ex_check, "~> 0.15", only: :dev, runtime: false},
       {:ex_doc, "~> 0.30", only: [:dev, :test], runtime: false},
       {:faker, "0.17.0", only: :test},
@@ -43,12 +43,10 @@ defmodule MemGpt.MixProject do
       {:mix_audit, "~> 2.1", only: :dev, runtime: false},
       {:mix_test_interactive, "~> 1.2", only: :dev, runtime: false},
       {:mox, "~> 1.1", only: :test},
-      {:openai, "~> 0.5"},
+      {:open_ai_client, "~> 1.0", organization: "artium"},
       {:sobelow, "~> 0.12", only: [:dev, :test], runtime: false},
       {:stream_data, "~> 0.6"},
-      {:typed_struct, "~> 0.3"},
-      {:uuid, "~> 1.1"},
-      {:vex, "~> 0.9"}
+      {:typed_struct, "~> 0.3"}
     ]
   end
 
