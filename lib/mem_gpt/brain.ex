@@ -26,7 +26,8 @@ defmodule MemGpt.Brain do
   @type thought() :: Thought.t()
   @type user_message() :: UserMessage.t()
   @type memory() :: function_call() | function_response() | thought() | user_message()
-  @type think_result() :: :sleep | {:process_data, t()}
+  @type think_result() ::
+          :sleep | {:process_data, user_message(), t()} | {:call_function, function_call(), t()}
 
   typedstruct do
     field :memories, list(memory()), default: []
