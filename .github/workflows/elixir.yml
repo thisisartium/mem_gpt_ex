@@ -14,6 +14,9 @@ on:
 permissions:
   contents: read
 
+env:
+  OPENAI_API_KEY: "fake-key-for-testing"
+
 jobs:
   build:
 
