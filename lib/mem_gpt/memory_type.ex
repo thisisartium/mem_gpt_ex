@@ -38,7 +38,6 @@ defimpl MemGpt.MemoryType, for: Map do
   def to_memory(map)
 
   def to_memory(%{
-        "finish_reason" => "function_call",
         "message" => %{
           "function_call" => %{
             "name" => name,
@@ -47,5 +46,14 @@ defimpl MemGpt.MemoryType, for: Map do
         }
       }) do
     FunctionCall.new(name, arguments)
+  end
+
+  def to_memory(%{
+        "message" => %{
+          "role" => "assistant",
+          "content" => content
+        }
+      }) do
+    MemGpt.Thought.new(content)
   end
 end

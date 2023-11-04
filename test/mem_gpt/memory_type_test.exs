@@ -4,13 +4,12 @@ defmodule MemGpt.MemoryTypeTest do
   use MemGpt.TestCase, async: true
 
   alias MemGpt.FunctionCall
+  alias MemGpt.Thought
   alias MemGpt.MemoryType
 
   describe "to_memory/1 for Map" do
     test "converts an OpenAI function call to a FunctionCall memory" do
       data = %{
-        "finish_reason" => "function_call",
-        "index" => 0,
         "message" => %{
           "role" => "assistant",
           "function_call" => %{
@@ -23,6 +22,19 @@ defmodule MemGpt.MemoryTypeTest do
       }
 
       expected = FunctionCall.new("send_user_message", %{"message" => "Hello, world!"})
+
+      assert MemoryType.to_memory(data) == expected
+    end
+
+    test "converts an OpenAI assistant response to a Thought memory" do
+      data = %{
+        "message" => %{
+          "role" => "assistant",
+          "content" => "Hello, world!"
+        }
+      }
+
+      expected = Thought.new("Hello, world!")
 
       assert MemoryType.to_memory(data) == expected
     end
