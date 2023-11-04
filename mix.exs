@@ -43,7 +43,7 @@ defmodule MemGpt.MixProject do
       {:mix_audit, "~> 2.1", only: :dev, runtime: false},
       {:mix_test_interactive, "~> 1.2", only: :dev, runtime: false},
       {:mox, "~> 1.1", only: :test},
-      {:open_ai_client, "~> 1.0", organization: "artium"},
+      {:open_ai_client, "~> 1.0"},
       {:sobelow, "~> 0.12", only: [:dev, :test], runtime: false},
       {:stream_data, "~> 0.6"},
       {:typed_struct, "~> 0.3"}
