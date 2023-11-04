@@ -57,6 +57,14 @@ defmodule MemGpt.Brain do
     handle_memory(memory, brain)
   end
 
+  @doc """
+  Determines if the brain should wake up based on its current state.
+
+  The brain should wake up if there are memories to process or if the last processed memory
+  requires a response. If there are no memories or the last processed memory does not require
+  a response, the brain should not wake up.
+  """
+  @spec should_wake_up?(t()) :: boolean()
   def should_wake_up?(%__MODULE__{memories: []}) do
     false
   end
