@@ -31,6 +31,7 @@ defmodule MemGpt.Brain do
 
   typedstruct do
     field :memories, list(memory()), default: []
+    field :last_processed_memory, memory(), default: nil
   end
 
   @doc """
@@ -55,6 +56,22 @@ defmodule MemGpt.Brain do
   @spec think(t()) :: think_result()
   def think(%__MODULE__{memories: [memory | _]} = brain) do
     handle_memory(memory, brain)
+  end
+
+  def should_wake_up?(%__MODULE__{memories: []}) do
+    false
+  end
+
+  def should_wake_up?(%__MODULE__{last_processed_memory: memory, memories: [memory | _]}) do
+    false
+  end
+
+  def should_wake_up?(%__MODULE__{memories: [%FunctionCall{} = function_call | _]}) do
+    function_call.request_heartbeat?
+  end
+
+  def should_wake_up?(%__MODULE__{}) do
+    true
   end
 
   @doc """

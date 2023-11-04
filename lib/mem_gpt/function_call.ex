@@ -13,6 +13,7 @@ defmodule MemGpt.FunctionCall do
   typedstruct do
     field :name, String.t(), enforce: true
     field :arguments, map(), default: %{}
+    field :request_heartbeat?, boolean(), default: false
   end
 
   @doc """
@@ -20,6 +21,7 @@ defmodule MemGpt.FunctionCall do
   """
   @spec new(String.t(), map()) :: t()
   def new(name, arguments) do
-    %__MODULE__{name: name, arguments: arguments}
+    {heartbeat, arguments} = Map.pop(arguments, "heartbeat", false)
+    %__MODULE__{name: name, arguments: arguments, request_heartbeat?: heartbeat}
   end
 end
