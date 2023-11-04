@@ -37,7 +37,6 @@ defmodule MemGpt.Brain do
   @doc """
   Creates a new brain with no memories.
   """
-  @spec new() :: t()
   def new do
     %__MODULE__{}
   end
